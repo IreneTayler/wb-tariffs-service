@@ -1,10 +1,11 @@
 import os
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-from app.db import get_db
 from app.services.wb_service import sync_tariffs
 from app.models import TariffBox
 from sqlalchemy.orm import Session
+from app.db import SessionLocal
+from app.db import get_db
 
 router = APIRouter()
 

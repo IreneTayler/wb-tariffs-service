@@ -5,7 +5,7 @@ import os
 # Database connection URL (used inside Docker)
 DATABASE_URL = os.getenv(
     "DATABASE_URL",
-    "postgresql://postgres:postgres@postgres-db:5432/postgres"
+    "postgresql://postgres:postgres@postgres:5432/tariffs"
 )
 
 # Create SQLAlchemy engine
@@ -17,7 +17,6 @@ SessionLocal = sessionmaker(
     autoflush=False,
     bind=engine
 )
-
 # Base class for models
 Base = declarative_base()
 
