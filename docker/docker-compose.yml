@@ -2,40 +2,26 @@ services:
   postgres-db:
     image: postgres:15
     container_name: postgres-db
-    restart: always
     environment:
+      POSTGRES_DB: tariffs
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: tariffs
     ports:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
-      interval: 5s
-      timeout: 5s
-      retries: 5
 
   backend:
     build:
       context: ..
-      dockerfile: Dockerfile   # <-- root Dockerfile
+      dockerfile: Dockerfile
     container_name: tariff-backend
-    restart: always
+    env_file:
+      - ../.env
+    depends_on:
+      - postgres-db
     ports:
       - "8000:8000"
-    environment:
-      # Database connection
-      DATABASE_URL: postgresql://postgres:postgres@postgres-db:5432/tariffs
-
-      # Put your real Wildberries API token here
-      WB_API_TOKEN: eyJhbGciOiJFUzI1NiIsImtpZCI6IjIwMjUwOTA0djEiLCJ0eXAiOiJKV1QifQ.eyJhY2MiOjMsImVudCI6MSwiZXhwIjoxNzg3MzQyODk1LCJmb3IiOiJzZWxmIiwiaWQiOiIwMTljN2ExNy1hMjI1LTc3NjItOGQ0Yy0wYjZhNWIwODk3NzUiLCJpaWQiOjQ1OTExNjA5LCJvaWQiOjExMzA0NiwicyI6MTA3Mzc0MTgzMiwic2lkIjoiOTMyYzE3NmEtNTA4NS01YzZmLWJjMzMtNGU4NGNkZjU4ZDdlIiwidCI6ZmFsc2UsInVpZCI6NDU5MTE2MDl9.8By8w5cwHt_fCu0UG6fjkHZrtwxE9PqntYkzYysmYe36AQ50eejDDK0jnCDYC54wU3LDs5qvf8_aQ2yrkf5evA
-
-    depends_on:
-      postgres-db:
-        condition: service_healthy
-
     command: >
       sh -c "
       alembic upgrade head &&
