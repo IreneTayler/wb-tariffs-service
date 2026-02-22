@@ -1,9 +1,10 @@
+import os
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-import os
-
-from app.db import SessionLocal
+from app.db import get_db
 from app.services.wb_service import sync_tariffs
+from app.models import TariffBox
+from sqlalchemy.orm import Session
 
 router = APIRouter()
 
@@ -25,3 +26,8 @@ def sync_wb_tariffs(db: Session = Depends(get_db)):
 
     result = sync_tariffs(db, api_token)
     return result
+
+@router.get("/tariffs")
+def get_tariffs(db: Session = Depends(get_db)):
+    tariffs = db.query(TariffBox).all()
+    return tariffs
