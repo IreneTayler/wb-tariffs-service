@@ -8,10 +8,10 @@ router = APIRouter(prefix="/tariffs", tags=["Tariffs"])
 
 @router.get("/")
 def get_tariffs(date: str = None, db: Session = Depends(get_db)):
-    query = db.query(models.TariffBox)
+    query = db.query(models.Tariff)
 
     if date:
-        query = query.filter(models.TariffBox.date == date)
+        query = query.filter(models.Tariff.date == date)
 
     tariffs = query.all()
 

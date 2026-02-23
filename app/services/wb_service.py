@@ -1,7 +1,7 @@
 import requests
 from datetime import date
 from sqlalchemy.orm import Session
-from app.models import TariffBox
+from app.models import Tariff
 
 
 WB_TARIFFS_URL = "https://common-api.wildberries.ru/api/v1/tariffs/box"
@@ -26,20 +26,11 @@ def fetch_tariffs(api_token: str):
     Returns list of warehouses tariffs and date.
     """
 
-    headers = {
-        "Authorization": api_token
-    }
+    headers = {"Authorization": api_token}
 
-    params = {
-        "date": date.today().isoformat()
-    }
+    params = {"date": date.today().isoformat()}
 
-    response = requests.get(
-        WB_TARIFFS_URL,
-        headers=headers,
-        params=params,
-        timeout=30
-    )
+    response = requests.get(WB_TARIFFS_URL, headers=headers, params=params, timeout=30)
 
     response.raise_for_status()
 
@@ -47,11 +38,7 @@ def fetch_tariffs(api_token: str):
 
     # Correct structure:
     # response -> data -> warehouseList
-    tariffs = (
-        data.get("response", {})
-            .get("data", {})
-            .get("warehouseList", [])
-    )
+    tariffs = data.get("response", {}).get("data", {}).get("warehouseList", [])
 
     return tariffs, params["date"]
 
@@ -64,7 +51,7 @@ def save_tariffs(db: Session, tariffs: list, tariff_date: str):
     """
 
     # Delete existing data for this date (prevent duplicates)
-    db.query(TariffBox).filter(TariffBox.date == tariff_date).delete()
+    db.query(Tariff).filter(Tariff.date == tariff_date).delete()
     db.commit()
 
     saved_count = 0
@@ -74,7 +61,7 @@ def save_tariffs(db: Session, tariffs: list, tariff_date: str):
         if not isinstance(item, dict):
             continue
 
-        tariff = TariffBox(
+        tariff = Tariff(
             date=tariff_date,
             warehouse_name=item.get("warehouseName"),
             delivery_coef=to_float(item.get("boxDeliveryCoefExpr")),
@@ -87,6 +74,7 @@ def save_tariffs(db: Session, tariffs: list, tariff_date: str):
     db.commit()
 
     return saved_count
+
 
 def sync_tariffs(db: Session, api_token: str):
     """
@@ -102,14 +90,8 @@ def sync_tariffs(db: Session, api_token: str):
     tariffs, tariff_date = fetch_tariffs(api_token)
 
     if not tariffs:
-        return {
-            "saved": 0,
-            "message": "No tariffs received"
-        }
+        return {"saved": 0, "message": "No tariffs received"}
 
     saved_count = save_tariffs(db, tariffs, tariff_date)
 
-    return {
-        "saved": saved_count,
-        "date": tariff_date
-    }
+    return {"saved": saved_count, "date": tariff_date}

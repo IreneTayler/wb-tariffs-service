@@ -1,10 +1,12 @@
 from pydantic import BaseModel
-
+from datetime import date
 
 class TariffBase(BaseModel):
     name: str
     price: float
     description: str | None = None
+    valid_from: date
+    valid_to: date
 
 
 class TariffCreate(TariffBase):
@@ -20,3 +22,4 @@ class TariffResponse(TariffBase):
 
     class Config:
         from_attributes = True
+        orm_mode = True
