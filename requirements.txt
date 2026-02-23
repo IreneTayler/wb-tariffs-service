@@ -1,0 +1,3 @@
+fastapi
+psycopg2
+uvicorn
