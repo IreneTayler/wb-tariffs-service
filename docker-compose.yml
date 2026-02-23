@@ -1,30 +1,43 @@
-version: '3.7'
+version: '3.8'
 
 services:
-  db:
-    image: postgres:13
-    container_name: postgres_db
-    environment:
-      POSTGRES_USER: user
-      POSTGRES_PASSWORD: password
-      POSTGRES_DB: tariffs_db
-    ports:
-      - "5432:5432"
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-
   app:
-    build: .
-    container_name: wb_tariffs_app
-    environment:
-      DATABASE_URL: postgres://user:password@db:5432/tariffs_db
-      GOOGLE_SHEET_ID: "your_google_sheet_id_here"
-    ports:
-      - "8000:8000"
-    depends_on:
-      - db
+    image: node:16
+    container_name: wb_tariffs_service
+    working_dir: /app
     volumes:
       - .:/app
+    environment:
+      - NODE_ENV=production
+      - DB_HOST=db
+      - DB_PORT=5432
+      - DB_USER=postgres
+      - DB_PASSWORD=password
+      - DB_NAME=tariffs_db
+    depends_on:
+      - db
+    command: ["npm", "start"]
+
+  db:
+    image: postgres:13
+    container_name: tariffs_db
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=tariffs_db
+    volumes:
+      - ./data/db:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+  google_sheets:
+    image: your-google-sheets-image
+    container_name: google_sheets_service
+    depends_on:
+      - app
+    environment:
+      - GOOGLE_SHEET_API_KEY=eyJhbGciOiJFUzI1NiIsImtpZCI6IjIwMjUwOTA0djEiLCJ0eXAiOiJKV1QifQ.eyJhY2MiOjMsImVudCI6MSwiZXhwIjoxNzg3MzQyODk1LCJmb3IiOiJzZWxmIiwiaWQiOiIwMTljN2ExNy1hMjI1LTc3NjItOGQ0Yy0wYjZhNWIwODk3NzUiLCJpaWQiOjQ1OTExNjA5LCJvaWQiOjExMzA0NiwicyI6MTA3Mzc0MTgzMiwic2lkIjoiOTMyYzE3NmEtNTA4NS01YzZmLWJjMzMtNGU4NGNkZjU4ZDdlIiwidCI6ZmFsc2UsInVpZCI6NDU5MTE2MDl9.8By8w5cwHt_fCu0UG6fjkHZrtwxE9PqntYkzYysmYe36AQ50eejDDK0jnCDYC54wU3LDs5qvf8_aQ2yrkf5evA
+    command: ["npm", "start"]
 
 volumes:
-  postgres_data:
+  db_data:
