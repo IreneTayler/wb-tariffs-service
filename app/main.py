@@ -1,23 +1,32 @@
-from fastapi import FastAPI
-from app.db import engine, Base
-from app.routers import tariffs
-from app.api.routes import router
-from app.routers.tariffs import router
-from app.models.tariff import Tariff
+# Import FastAPI and necessary dependencies
+from fastapi import FastAPI, Depends
+from sqlalchemy.orm import Session
+from . import crud, models, schemas, database, services
+from typing import List
+import os
 
+# Initialize FastAPI app
 app = FastAPI()
 
-# Create tables
-Base.metadata.create_all(bind=engine)
 
-# Include router
-app.include_router(tariffs.router)
+# Dependency to get the DB session
+def get_db():
+    db = database.SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
 
-app = FastAPI(title="WB Tariffs Service")
 
-app.include_router(router)
+# Endpoint to sync tariffs (fetch from Wildberries API and update DB and Google Sheets)
+@app.post("/sync-tariffs/")
+def sync_tariffs(db: Session = Depends(get_db)):
+    services.save_tariff_data(db)
+    services.update_google_sheets(db, os.getenv("GOOGLE_SHEET_ID"))
+    return {"message": "Tariffs synced successfully!"}
 
 
-@app.get("/")
-def root():
-    return {"message": "API is running"}
+# Endpoint to retrieve tariffs from the database
+@app.get("/tariffs/", response_model=List[schemas.Tariff])
+def read_tariffs(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+    return crud.get_tariffs(db=db, skip=skip, limit=limit)

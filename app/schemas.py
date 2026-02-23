@@ -1,25 +1,22 @@
+# Define Pydantic schemas for request and response validation
+
 from pydantic import BaseModel
-from datetime import date
+
 
 class TariffBase(BaseModel):
     name: str
     price: float
-    description: str | None = None
-    valid_from: date
-    valid_to: date
 
 
+# Schema for creating a tariff
 class TariffCreate(TariffBase):
     pass
 
 
-class TariffUpdate(TariffBase):
-    pass
-
-
-class TariffResponse(TariffBase):
+# Schema for reading a tariff (includes ID)
+class Tariff(TariffBase):
     id: int
 
+    # Allow ORM compatibility
     class Config:
-        from_attributes = True
         orm_mode = True
