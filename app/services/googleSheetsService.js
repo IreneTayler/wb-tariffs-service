@@ -3,7 +3,7 @@ const { google } = require('googleapis');
 // Update Google Sheets with the tariff data
 const updateGoogleSheets = async (tariffs) => {
   const auth = new google.auth.GoogleAuth({
-    keyFile: 'path/to/your-service-account.json',  // Replace with the path to your service account JSON file
+    keyFile: 'path/to/client_secret.json',  // Replace with the path to your service account JSON file
     scopes: ['https://www.googleapis.com/auth/spreadsheets'],
   });
 
@@ -14,7 +14,7 @@ const updateGoogleSheets = async (tariffs) => {
   const values = tariffs.map(tariff => [tariff.tariff_name, tariff.price]);
 
   const request = {
-    spreadsheetId: 'your_spreadsheet_id',  // Replace with your Google Sheets ID
+    spreadsheetId: '1sBDLFToCZ7Rv7AjNPY9rjkVFzNev1Sx-NovoZkPSjYI',  // Replace with your Google Sheets ID
     range: range,
     valueInputOption: 'RAW',
     resource: {
