@@ -1,84 +1,44 @@
-from fastapi import FastAPI
-from pydantic import BaseModel
-import psycopg2
-import os
-import time
-from sqlalchemy import create_engine
+from fastapi import FastAPI, Depends
+from sqlalchemy.orm import Session
+from app.database import SessionLocal, engine, Base
+from app import crud, schemas, services
 
-app = FastAPI()
+Base.metadata.create_all(bind=engine)
 
-DATABASE_URL = os.getenv(
-    "DATABASE_URL", "postgresql://postgres:password@localhost:5432/tariffs_db"
-)
-
-engine = create_engine(DATABASE_URL)
+app = FastAPI(title="WB Tariffs Service")
 
 
-def get_db_connection():
-    conn = psycopg2.connect(DATABASE_URL)
-    return conn
-
-
-class Tariff(BaseModel):
-    tariff_name: str
-    price: float
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
 
 
 @app.get("/")
-def read_root():
-    return {"message": "Hello World"}
+def root():
+    return {"message": "WB Tariffs Service running"}
 
 
-@app.post("/create_tariff/")
-def create_tariff(tariff: Tariff):
-    try:
-        conn = get_db_connection()
-        cur = conn.cursor()
-        # Create a new tariff
-        cur.execute(
-            "INSERT INTO tariffs (tariff_name, price) VALUES (%s, %s)",
-            (tariff.tariff_name, tariff.price),
-        )
-        conn.commit()
-        cur.close()
-        conn.close()
-        return {"message": "Tariff created successfully"}
-    except Exception as e:
-        return {"error": str(e)}
+@app.post("/tariffs/")
+def create_tariff(tariff: schemas.TariffCreate, db: Session = Depends(get_db)):
+    return crud.create_tariff(db, tariff.tariff_name, tariff.price)
 
 
 @app.get("/tariffs/")
-def get_tariffs():
-    conn = get_db_connection()
-    cur = conn.cursor()
-    cur.execute("SELECT * FROM tariffs")
-    tariffs = cur.fetchall()
-    cur.close()
-    conn.close()
-    return {"tariffs": tariffs}
+def read_tariffs(db: Session = Depends(get_db)):
+    return crud.get_tariffs(db)
 
 
-def create_table():
-    # Wait DB ready
-    time.sleep(5)
-
-    conn = psycopg2.connect(DATABASE_URL)
-    cur = conn.cursor()
-    cur.execute(
-        """
-    CREATE TABLE IF NOT EXISTS tariffs (
-        id SERIAL PRIMARY KEY,
-        date DATE,
-        warehouse_name TEXT,
-        box_type TEXT,
-        coefficient NUMERIC,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-    );
-    """
-    )
-    conn.commit()
-    cur.close()
-    conn.close()
+@app.post("/sync-wb/")
+def sync_wb(db: Session = Depends(get_db)):
+    services.fetch_wb_tariffs(db)
+    return {"message": "WB tariffs synced"}
 
 
-create_table()
+@app.post("/export-google/")
+def export_google(db: Session = Depends(get_db)):
+    tariffs = crud.get_tariffs(db)
+    services.update_google_sheets(tariffs)
+    return {"message": "Exported to Google Sheets"}
