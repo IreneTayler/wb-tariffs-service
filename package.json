@@ -14,9 +14,9 @@
     "axios": "^0.26.1",
     "express": "^4.17.1",
     "googleapis": "^39.2.0",
-    "knex": "^0.95.5",
-    "pg": "^8.7.1",
-    "nodemon": "^2.0.15"
+    "knex": "^0.95.15",
+    "nodemon": "^2.0.15",
+    "pg": "^8.7.1"
   },
   "devDependencies": {
     "dotenv": "^10.0.0"

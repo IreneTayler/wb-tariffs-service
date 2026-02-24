@@ -1,10 +1,17 @@
 from fastapi import FastAPI
 from pydantic import BaseModel
 import psycopg2
+import os
+import time
+from sqlalchemy import create_engine
 
 app = FastAPI()
 
-DATABASE_URL = "postgresql://postgres:12345678@localhost:5432/tariffs_db"
+DATABASE_URL = os.getenv(
+    "DATABASE_URL", "postgresql://postgres:password@localhost:5432/tariffs_db"
+)
+
+engine = create_engine(DATABASE_URL)
 
 
 def get_db_connection():
@@ -49,3 +56,29 @@ def get_tariffs():
     cur.close()
     conn.close()
     return {"tariffs": tariffs}
+
+
+def create_table():
+    # Wait DB ready
+    time.sleep(5)
+
+    conn = psycopg2.connect(DATABASE_URL)
+    cur = conn.cursor()
+    cur.execute(
+        """
+    CREATE TABLE IF NOT EXISTS tariffs (
+        id SERIAL PRIMARY KEY,
+        date DATE,
+        warehouse_name TEXT,
+        box_type TEXT,
+        coefficient NUMERIC,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    );
+    """
+    )
+    conn.commit()
+    cur.close()
+    conn.close()
+
+
+create_table()

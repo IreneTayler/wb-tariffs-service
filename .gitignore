@@ -1,1 +1,4 @@
-node_modules/
+.env
+node_modules
+__pycache__
+client_secret.json

@@ -1,10 +1,8 @@
 fastapi
 uvicorn
-psycopg2
-requests
+sqlalchemy
+psycopg2-binary
+python-dotenv
+google-api-python-client
 google-auth
 google-auth-oauthlib
-google-auth-httplib2
-google-api-python-client
-gspread
-mysql-connector-python
