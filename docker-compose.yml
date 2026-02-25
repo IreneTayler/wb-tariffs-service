@@ -23,7 +23,7 @@ services:
     environment:
       DATABASE_URL: postgresql+psycopg2://postgres:12345678@postgres:5432/tariffs_db
       GOOGLE_APPLICATION_CREDENTIALS: /app/service_account.json
-      SPREADSHEET_ID: ${SPREADSHEET_ID}
+      SPREADSHEET_ID: 1aasEp9rEi7BtesyVvtYCS8Wzrpf84Xl7xosB-2SVGeg
     volumes:
       - ./service_account.json:/app/service_account.json:ro
     command: uvicorn main:app --host 0.0.0.0 --port 8000

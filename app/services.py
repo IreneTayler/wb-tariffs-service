@@ -34,7 +34,7 @@ def update_google_sheets(tariffs):
     values = [["ID", "Name", "Price"]]
 
     for t in tariffs:
-        values.append([t.id, t.name, t.price])
+        values.append([t.id, t.tariff_name, t.price])
 
     body = {"values": values}
 
