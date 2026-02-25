@@ -2,6 +2,9 @@ from fastapi import FastAPI, Depends
 from sqlalchemy.orm import Session
 from app.database import SessionLocal, engine, Base
 from app import crud, schemas, services
+from app import services
+from app import models
+from app.database import get_db
 
 Base.metadata.create_all(bind=engine)
 
@@ -39,6 +42,6 @@ def sync_wb(db: Session = Depends(get_db)):
 
 @app.post("/export-google/")
 def export_google(db: Session = Depends(get_db)):
-    tariffs = crud.get_tariffs(db)
+    tariffs = db.query(models.Tariff).all()
     services.update_google_sheets(tariffs)
-    return {"message": "Exported to Google Sheets"}
+    return {"status": "Exported"}

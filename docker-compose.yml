@@ -1,22 +1,7 @@
-version: "3.8"
-
 services:
-  backend:
-    build: .
-    container_name: wb-backend
-    ports:
-      - "8000:8000"
-    volumes:
-      - .:/app
-    env_file:
-      - .env
-    depends_on:
-      - postgres
-    command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
-
   postgres:
-    image: postgres:13
-    container_name: wb-postgres
+    image: postgres:15
+    container_name: wb_postgres
     restart: always
     environment:
       POSTGRES_USER: postgres
@@ -25,7 +10,20 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - wb-tariffs-service_postgres_data:/var/lib/postgresql/data
+
+  backend:
+    build: .
+    container_name: wb_backend
+    restart: always
+    depends_on:
+      - postgres
+    ports:
+      - "8000:8000"
+    environment:
+      DATABASE_URL: postgresql+psycopg2://postgres:12345678@postgres:5432/tariffs_db
+      SPREADSHEET_ID: 1aasEp9rEi7BtesyVvtYCS8Wzrpf84Xl7xosB-2SVGeg
+    command: uvicorn main:app --host 0.0.0.0 --port 8000
 
 volumes:
-  postgres_data:
+  wb-tariffs-service_postgres_data:

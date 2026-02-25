@@ -6,3 +6,4 @@ python-dotenv
 requests
 google-api-python-client
 google-auth
+alembic==1.18.4
