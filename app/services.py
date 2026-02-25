@@ -25,7 +25,7 @@ SPREADSHEET_ID = os.getenv("SPREADSHEET_ID")
 
 def update_google_sheets(tariffs):
     credentials = service_account.Credentials.from_service_account_file(
-        "service-account.json", scopes=SCOPES
+        os.getenv("GOOGLE_APPLICATION_CREDENTIALS"), scopes=SCOPES
     )
 
     service = build("sheets", "v4", credentials=credentials)
